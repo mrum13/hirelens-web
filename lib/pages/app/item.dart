@@ -18,9 +18,12 @@ class _ItemPageState extends State<ItemPage> {
   List<Map<String, dynamic>> datas = [];
   List galleryImages = [];
   List<String> selectedGalleryImages = [];
+  List btsImages = [];
+  List<String> selectedBtsImages = [];
   bool isLoading = false;
   bool buttonLoading = false;
   bool galleryLoading = false;
+  bool btsLoading = false;
 
   void fetchDatas() async {
     setState(() {
@@ -60,6 +63,35 @@ class _ItemPageState extends State<ItemPage> {
         galleryLoading = false;
       });
       DMethod.log(e.toString(), prefix: "Fetch Item Gallery");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(e.toString(), style: TextStyle(color: Colors.white)),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  void fetchItemsBts() async {
+    try {
+      setState(() {
+        btsLoading = true;
+      });
+      final client = Supabase.instance.client;
+      var response = await client.from('item_bts').select('*');
+
+      setState(() {
+        btsImages = response;
+        btsLoading = false;
+      });
+
+      DMethod.log("Berhasil get", prefix: "Fetch Item BTS");
+      DMethod.log("$btsImages", prefix: "Fetch Item BTS");
+    } catch (e) {
+      setState(() {
+        btsLoading = false;
+      });
+      DMethod.log(e.toString(), prefix: "Fetch Item BTS");
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(e.toString(), style: TextStyle(color: Colors.white)),
@@ -118,8 +150,18 @@ class _ItemPageState extends State<ItemPage> {
     }
   }
 
+  Future getFilteredBts(String itemId) async {
+    selectedBtsImages.clear();
+    for (var item in btsImages) {
+      if (item['item_id'] == itemId) {
+        selectedBtsImages.add(item['image_url']);
+      }
+    }
+  }
+
   void openItemDetail(String itemId) async {
     await getFilteredGallery(itemId);
+    await getFilteredBts(itemId);
 
     DMethod.log(selectedGalleryImages.toString());
 
@@ -259,6 +301,48 @@ class _ItemPageState extends State<ItemPage> {
                                 ).textTheme.displayMedium,
                           ),
                           const SizedBox(height: 8),
+                          btsLoading
+                              ? const Center(child: CircularProgressIndicator())
+                              : SizedBox(
+                                height: 56,
+                                width: double.infinity,
+                                child: ListView.builder(
+                                  scrollDirection: Axis.horizontal,
+                                  shrinkWrap: true,
+                                  itemCount: selectedBtsImages.length,
+                                  itemBuilder: (context, index) {
+                                    return Row(
+                                      children: [
+                                        ClipRRect(
+                                          borderRadius: BorderRadius.circular(
+                                            8,
+                                          ),
+                                          child: InkWell(
+                                            onTap: () {
+                                              showDialog(
+                                                context: context,
+                                                builder: (context) {
+                                                  return Dialog(
+                                                    child: Image.network(
+                                                      selectedBtsImages[index],
+                                                      fit: BoxFit.cover,
+                                                    ),
+                                                  );
+                                                },
+                                              );
+                                            },
+                                            child: Image.network(
+                                              selectedBtsImages[index],
+                                              fit: BoxFit.cover,
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 8),
+                                      ],
+                                    );
+                                  },
+                                ),
+                              ),
                         ],
                       ),
                     ),
@@ -421,6 +505,7 @@ class _ItemPageState extends State<ItemPage> {
     super.initState();
     fetchDatas();
     fetchItemsGallery();
+    fetchItemsBts();
   }
 
   @override
