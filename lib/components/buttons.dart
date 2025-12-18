@@ -3,7 +3,7 @@
 import "package:flutter/material.dart";
 import "package:hirelens_admin/theme.dart";
 
-enum MyFilledButtonVariant { primary, secondary, tertiary, neutral }
+enum MyFilledButtonVariant { primary, secondary, tertiary, neutral, error }
 
 class MyFilledButton extends StatefulWidget {
   bool isLoading;
@@ -73,6 +73,11 @@ BoxDecoration _variantSelector(MyFilledButtonVariant variant) {
     case MyFilledButtonVariant.neutral:
       return BoxDecoration(
         color: hirelensDarkTheme.colorScheme.surfaceBright,
+        borderRadius: BorderRadius.circular(16),
+      );
+    case MyFilledButtonVariant.error:
+      return BoxDecoration(
+        color: Colors.red,
         borderRadius: BorderRadius.circular(16),
       );
   }

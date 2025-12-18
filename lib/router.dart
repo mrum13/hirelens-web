@@ -1,4 +1,5 @@
 import "package:go_router/go_router.dart";
+import "package:hirelens_admin/pages/app/edit_item.dart";
 import "package:supabase_flutter/supabase_flutter.dart";
 
 // Pages
@@ -19,6 +20,7 @@ GoRouter router = GoRouter(
       builder: (context, state) => TransactionPage(),
     ),
     GoRoute(path: '/app/items', builder: (context, state) => ItemPage()),
+    GoRoute(path: '/app/items/edit', builder: (context, state) => EditItem()),
     GoRoute(path: '/app/vendors', builder: (context, state) => VendorPage()),
   ],
   initialLocation: '/',

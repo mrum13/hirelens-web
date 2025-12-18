@@ -1,3 +1,4 @@
+import 'package:d_method/d_method.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hirelens_admin/components/buttons.dart';
@@ -14,6 +15,7 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   TextEditingController emailController = TextEditingController();
   TextEditingController tokenController = TextEditingController();
+  TextEditingController passwordController = TextEditingController();
   bool isLoginLoading = false;
   bool isSendCodeLoading = false;
 
@@ -30,26 +32,43 @@ class _LoginPageState extends State<LoginPage> {
         throw Exception('Email and token cannot be empty');
       }
 
-      final result = await Supabase.instance.client.auth.verifyOTP(
+      // Verifikasi OTP
+      await Supabase.instance.client.auth.verifyOTP(
         type: OtpType.email,
         email: email,
         token: token,
       );
 
-      if (result.user!.userMetadata!['role'] != null) {
+      // CEK ROLE DARI TABEL PROFILES
+      final profileResponse =
+          await Supabase.instance.client
+              .from('profiles')
+              .select('role')
+              .eq('email', email)
+              .single();
+
+      DMethod.log(profileResponse.toString());
+
+      // Jika role bukan 'admin', tolak login
+      if (profileResponse['role'] != 'admin') {
         await Supabase.instance.client.auth.signOut();
         throw Exception("This user is not allowed to login to admin panel!");
       }
 
+      setState(() {
+        isSendCodeLoading = false;
+      });
+
+      // Login berhasil, redirect ke home
       GoRouter.of(context).replace('/app/home');
     } catch (e) {
+      setState(() {
+        isSendCodeLoading = false;
+      });
+      DMethod.log(e.toString());
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text('Login failed: ${e.toString()}')));
-      setState(() {
-        isLoginLoading = false;
-        isSendCodeLoading = false;
-      });
     }
   }
 
@@ -74,16 +93,69 @@ class _LoginPageState extends State<LoginPage> {
         context,
       ).showSnackBar(SnackBar(content: Text('Code sent to $email')));
 
-      // setState(() {
-      //   isSendCodeLoading = false;
-      // });
+      setState(() {
+        isSendCodeLoading = false;
+      });
     } catch (e) {
+      DMethod.log(e.toString());
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Failed to send code: ${e.toString()}')),
       );
 
       setState(() {
         isSendCodeLoading = false;
+      });
+    }
+  }
+
+  void handleLoginWithPassword() async {
+    setState(() {
+      isLoginLoading = true;
+    });
+
+    String email = emailController.text.trim();
+    String password = passwordController.text.trim();
+
+    try {
+      if (email.isEmpty || password.isEmpty) {
+        throw Exception('Email or Password cannot be empty');
+      }
+
+      await Supabase.instance.client.auth.signInWithPassword(
+        email: email,
+        password: password,
+      );
+
+      // CEK ROLE DARI TABEL PROFILES
+      final profileResponse =
+          await Supabase.instance.client
+              .from('profiles')
+              .select('role')
+              .eq('email', email)
+              .single();
+
+      DMethod.log(profileResponse.toString());
+
+      // Jika role bukan 'admin', tolak login
+      if (profileResponse['role'] != 'admin') {
+        await Supabase.instance.client.auth.signOut();
+        throw Exception("This user is not allowed to login to admin panel!");
+      }
+
+      setState(() {
+        isLoginLoading = true;
+      });
+
+      // Login berhasil, redirect ke home
+      GoRouter.of(context).replace('/app/home');
+    } catch (e) {
+      DMethod.log(e.toString());
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed login: ${e.toString()}')),
+      );
+
+      setState(() {
+        isLoginLoading = false;
       });
     }
   }
@@ -110,29 +182,36 @@ class _LoginPageState extends State<LoginPage> {
                 keyboardType: TextInputType.emailAddress,
               ),
               SizedBox(height: 16),
-              Row(
-                spacing: 16,
-                children: [
-                  Expanded(
-                    child: TextField(
-                      controller: tokenController,
-                      decoration: InputDecoration(label: Text('Kode OTP')),
-                    ),
-                  ),
-                  MyFilledButton(
-                    isLoading: isSendCodeLoading,
-                    width: 180,
-                    onTap: handleSendCode,
-                    variant: MyFilledButtonVariant.neutral,
-                    child: Text("Kirim OTP"),
-                  ),
-                ],
+              TextField(
+                autofocus: true,
+                controller: passwordController,
+                decoration: InputDecoration(label: Text('Password')),
+                obscureText: true,
+                keyboardType: TextInputType.text,
               ),
+              // Row(
+              //   spacing: 16,
+              //   children: [
+              //     Expanded(
+              //       child: TextField(
+              //         controller: tokenController,
+              //         decoration: InputDecoration(label: Text('Kode OTP')),
+              //       ),
+              //     ),
+              //     MyFilledButton(
+              //       isLoading: isSendCodeLoading,
+              //       width: 180,
+              //       onTap: handleSendCode,
+              //       variant: MyFilledButtonVariant.neutral,
+              //       child: Text("Kirim OTP"),
+              //     ),
+              //   ],
+              // ),
               SizedBox(height: 32),
               MyFilledButton(
                 isLoading: isLoginLoading,
                 variant: MyFilledButtonVariant.primary,
-                onTap: handleLogin,
+                onTap: handleLoginWithPassword,
                 child: Text(
                   "Login",
                   style: TextStyle(

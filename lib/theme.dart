@@ -7,6 +7,7 @@ ThemeData hirelensDarkTheme = ThemeData(
     surface: Color(0xff181C14),
     tertiary: Color(0xff006874),
     brightness: Brightness.dark,
+    error: Colors.red
   ),
   textTheme: TextTheme(
     displayLarge: GoogleFonts.montserrat(

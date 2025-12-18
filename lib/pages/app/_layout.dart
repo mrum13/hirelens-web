@@ -5,7 +5,8 @@ import 'package:go_router/go_router.dart';
 import 'package:hirelens_admin/theme.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-final scaffoldKey = GlobalKey<ScaffoldState>();
+// ❌ HAPUS INI - Jangan buat GlobalKey di luar class
+// final scaffoldKey = GlobalKey<ScaffoldState>();
 
 class MyAppLayout extends StatefulWidget {
   Widget child;
@@ -17,6 +18,9 @@ class MyAppLayout extends StatefulWidget {
 }
 
 class _MyAppLayoutState extends State<MyAppLayout> {
+  // ✅ Buat GlobalKey di dalam State, jadi setiap instance punya key sendiri
+  final scaffoldKey = GlobalKey<ScaffoldState>();
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -24,7 +28,7 @@ class _MyAppLayoutState extends State<MyAppLayout> {
         key: scaffoldKey,
         drawer: Container(
           width: MediaQuery.of(context).size.width * 0.25,
-          margin: EdgeInsets.all(8),
+          margin: const EdgeInsets.all(8),
           decoration: BoxDecoration(
             color: themeFromContext(context).colorScheme.surfaceBright,
             borderRadius: BorderRadius.circular(8),
@@ -32,34 +36,49 @@ class _MyAppLayoutState extends State<MyAppLayout> {
           child: ListView(
             children: [
               ListTile(
-                title: Text('Home'),
-                onTap: () => context.go('/app/home'),
+                title: const Text('Home'),
+                onTap: () {
+                  context.go('/app/home');
+                  Navigator.pop(context); // Close drawer
+                },
               ),
-              Divider(),
+              const Divider(),
               ListTile(
-                title: Text('Users'),
-                onTap: () => context.go('/app/users'),
+                title: const Text('Users'),
+                onTap: () {
+                  context.go('/app/users');
+                  Navigator.pop(context);
+                },
               ),
               ListTile(
-                title: Text('Vendors'),
-                onTap: () => context.go('/app/vendors'),
+                title: const Text('Vendors'),
+                onTap: () {
+                  context.go('/app/vendors');
+                  Navigator.pop(context);
+                },
               ),
-              Divider(),
+              const Divider(),
               ListTile(
-                title: Text('Transactions'),
-                onTap: () => context.go('/app/transactions'),
+                title: const Text('Transactions'),
+                onTap: () {
+                  context.go('/app/transactions');
+                  Navigator.pop(context);
+                },
               ),
-              Divider(),
+              const Divider(),
               ListTile(
-                title: Text('Items'),
-                onTap: () => context.go('/app/items'),
+                title: const Text('Items'),
+                onTap: () {
+                  context.go('/app/items');
+                  Navigator.pop(context);
+                },
               ),
             ],
           ),
         ),
         endDrawer: Container(
           width: MediaQuery.of(context).size.width * 0.25,
-          margin: EdgeInsets.all(8),
+          margin: const EdgeInsets.all(8),
           decoration: BoxDecoration(
             color: themeFromContext(context).colorScheme.surfaceBright,
             borderRadius: BorderRadius.circular(8),
@@ -67,27 +86,42 @@ class _MyAppLayoutState extends State<MyAppLayout> {
           child: ListView(
             children: [
               ListTile(
-                title: Text('Home'),
-                onTap: () => context.go('/app/home'),
+                title: const Text('Home'),
+                onTap: () {
+                  context.go('/app/home');
+                  Navigator.pop(context);
+                },
               ),
-              Divider(),
+              const Divider(),
               ListTile(
-                title: Text('Users'),
-                onTap: () => context.go('/app/users'),
+                title: const Text('Users'),
+                onTap: () {
+                  context.go('/app/users');
+                  Navigator.pop(context);
+                },
               ),
               ListTile(
-                title: Text('Vendors'),
-                onTap: () => context.go('/app/vendors'),
+                title: const Text('Vendors'),
+                onTap: () {
+                  context.go('/app/vendors');
+                  Navigator.pop(context);
+                },
               ),
-              Divider(),
+              const Divider(),
               ListTile(
-                title: Text('Transactions'),
-                onTap: () => context.go('/app/transactions'),
+                title: const Text('Transactions'),
+                onTap: () {
+                  context.go('/app/transactions');
+                  Navigator.pop(context);
+                },
               ),
-              Divider(),
+              const Divider(),
               ListTile(
-                title: Text('Items'),
-                onTap: () => context.go('/app/items'),
+                title: const Text('Items'),
+                onTap: () {
+                  context.go('/app/items');
+                  Navigator.pop(context);
+                },
               ),
             ],
           ),
@@ -95,9 +129,9 @@ class _MyAppLayoutState extends State<MyAppLayout> {
         appBar: PreferredSize(
           preferredSize: Size(MediaQuery.of(context).size.width, 96),
           child: Padding(
-            padding: EdgeInsets.all(16),
+            padding: const EdgeInsets.all(16),
             child: Container(
-              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               decoration: BoxDecoration(
                 color: themeFromContext(context).colorScheme.surfaceBright,
                 borderRadius: BorderRadius.circular(8),
@@ -106,16 +140,18 @@ class _MyAppLayoutState extends State<MyAppLayout> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   IconButton(
-                    icon: Icon(Icons.menu),
+                    icon: const Icon(Icons.menu),
                     onPressed: () {
                       scaffoldKey.currentState!.openDrawer();
                     },
                   ),
                   IconButton(
-                    icon: Icon(Icons.logout),
+                    icon: const Icon(Icons.logout),
                     onPressed: () async {
                       await Supabase.instance.client.auth.signOut();
-                      GoRouter.of(context).replace('/');
+                      if (context.mounted) {
+                        GoRouter.of(context).replace('/');
+                      }
                     },
                   ),
                 ],
