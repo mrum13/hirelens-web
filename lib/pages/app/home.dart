@@ -819,7 +819,15 @@ class _HomePageState extends State<HomePage> {
                             ),
                           ),
                         ),
-
+                        DataColumn(
+                          label: Text(
+                            'Status Kerja',
+                            style: TextStyle(
+                              color: Color(0xffC69749),
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
                         DataColumn(
                           label: Text(
                             'URL Photos',
@@ -900,7 +908,15 @@ class _HomePageState extends State<HomePage> {
                                     ),
                                   ),
                                 ),
-
+                                DataCell(
+                                  SelectableText(
+                                    transaction['status_work'].toString(),
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
                                 DataCell(
                                   SelectableText(
                                     transaction['url_photos'].toString(),

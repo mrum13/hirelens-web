@@ -64,31 +64,105 @@ class _TransactionPageState extends State<TransactionPage> {
     }
   }
 
-  void filterTransactions() {
+  void searchTransactions({required String keyword}) async {
+    if (!mounted) return;
+
     setState(() {
-      filteredTransactions =
-          transactions.where((transaction) {
-            // Filter berdasarkan search query
-            final matchesSearch =
-                searchQuery.isEmpty ||
-                transaction['id'].toString().toLowerCase().contains(
-                  searchQuery.toLowerCase(),
-                ) ||
-                (transaction['customer']?['user_metadata']?['displayName'] ??
-                        '')
-                    .toString()
-                    .toLowerCase()
-                    .contains(searchQuery.toLowerCase());
-
-            // Filter berdasarkan status
-            final matchesStatus =
-                selectedStatus == 'all' ||
-                transaction['status']?.toString().toLowerCase() ==
-                    selectedStatus.toLowerCase();
-
-            return matchesSearch && matchesStatus;
-          }).toList();
+      isLoading = true;
     });
+
+    try {
+      final client = Supabase.instance.client;
+
+      late PostgrestTransformBuilder<List<Map<String,dynamic>>> query; 
+
+      if (keyword.isNotEmpty) {
+        query = client
+          .from('transactions')
+          .select('*, vendors!inner(id,name)')
+          .or('user_displayname.ilike.%$keyword%')
+          .order('created_at', ascending: false);
+      } else {
+        query = client
+          .from('transactions')
+          .select('*, vendors!inner(id,name)')
+          .order('created_at', ascending: false);
+      }
+
+      final response = await query;
+
+      if (mounted) {
+        setState(() {
+          transactions = List<Map<String, dynamic>>.from(response);
+          filteredTransactions = transactions;
+          isLoading = false;
+        });
+      }
+    } catch (e) {
+      print('Error fetching transactions: $e');
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error loading transactions: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  void filterTransactions() async {
+    if (!mounted) return;
+
+    setState(() {
+      isLoading = true;
+    });
+
+    try {
+      final client = Supabase.instance.client;
+      late List<Map<String, dynamic>> response;
+
+      if (selectedStatus != "all") {
+        // Fetch transactions tanpa join (simple query)
+        response = await client
+            .from('transactions')
+            .select('*, vendors!inner(id,name)')
+            .eq('status_work', selectedStatus)
+            .order('created_at', ascending: false);
+      } else {
+        // Fetch transactions tanpa join (simple query)
+        response = await client
+            .from('transactions')
+            .select('*, vendors!inner(id,name)')
+            .order('created_at', ascending: false);
+      }
+
+      if (mounted) {
+        setState(() {
+          transactions = List<Map<String, dynamic>>.from(response);
+          filteredTransactions = transactions;
+          isLoading = false;
+        });
+      }
+    } catch (e) {
+      print('Error fetching transactions: $e');
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error loading transactions: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
   Color getStatusColor(String? status) {
@@ -346,11 +420,26 @@ class _TransactionPageState extends State<TransactionPage> {
                       'Date',
                       formatDate(transaction['created_at']),
                     ),
-                    _buildDetailRow('URL Photos', transaction['url_photos'] ?? '-'),
-                    _buildDetailRow('Status Payment', transaction['status_payment'] ?? '-'),
-                    _buildDetailRow('Status Work', transaction['status_work'] ?? '-'),
-                    _buildDetailRow('Status URL Photos', transaction['status_url_photos'] ?? '-'),
-                    _buildDetailRow('Status Payout', transaction['status_payout'] ?? '-'),
+                    _buildDetailRow(
+                      'URL Photos',
+                      transaction['url_photos'] ?? '-',
+                    ),
+                    _buildDetailRow(
+                      'Status Payment',
+                      transaction['status_payment'] ?? '-',
+                    ),
+                    _buildDetailRow(
+                      'Status Work',
+                      transaction['status_work'] ?? '-',
+                    ),
+                    _buildDetailRow(
+                      'Status URL Photos',
+                      transaction['status_url_photos'] ?? '-',
+                    ),
+                    _buildDetailRow(
+                      'Status Payout',
+                      transaction['status_payout'] ?? '-',
+                    ),
                   ],
                 ),
               ),
@@ -370,39 +459,39 @@ class _TransactionPageState extends State<TransactionPage> {
 
   void _deleteTransaction(Map<String, dynamic> transaction) async {
     try {
-        setState(() {
-          isLoading = true;
-        });
+      setState(() {
+        isLoading = true;
+      });
 
-        final supabase = Supabase.instance.client;
-        await supabase.from('transactions').delete().eq('id', transaction['id']);
+      final supabase = Supabase.instance.client;
+      await supabase.from('transactions').delete().eq('id', transaction['id']);
 
-        setState(() {
-          isLoading = false;
-        });
+      setState(() {
+        isLoading = false;
+      });
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              "Transaksi berhasil dihapus",
-              style: TextStyle(color: Colors.white),
-            ),
-            backgroundColor: Colors.green,
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            "Transaksi berhasil dihapus",
+            style: TextStyle(color: Colors.white),
           ),
-        );
+          backgroundColor: Colors.green,
+        ),
+      );
 
-        fetchTransactions();
-      } catch (e) {
-        setState(() {
-          isLoading = false;
-        });
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(e.toString(), style: TextStyle(color: Colors.white)),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
+      fetchTransactions();
+    } catch (e) {
+      setState(() {
+        isLoading = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(e.toString(), style: TextStyle(color: Colors.white)),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   void _updateStatusUrlPhotos({
@@ -539,13 +628,14 @@ class _TransactionPageState extends State<TransactionPage> {
                       border: Border.all(color: const Color(0xFF3A3F34)),
                     ),
                     child: TextField(
-                      onChanged: (value) {
+                      onSubmitted: (value) {
                         searchQuery = value;
-                        filterTransactions();
+                        searchTransactions(keyword: searchQuery);
+                        // filterTransactions();
                       },
                       style: const TextStyle(color: Colors.white),
                       decoration: const InputDecoration(
-                        hintText: 'Search by ID or customer name...',
+                        hintText: 'Search by Customer name...',
                         hintStyle: TextStyle(color: Color(0xFF9E9E9E)),
                         prefixIcon: Icon(
                           Icons.search,
@@ -580,19 +670,29 @@ class _TransactionPageState extends State<TransactionPage> {
                       color: Color(0xffC69749),
                     ),
                     items: const [
-                      DropdownMenuItem(value: 'all', child: Text('All Status')),
+                      DropdownMenuItem(value: 'all', child: Text('Semua')),
                       DropdownMenuItem(
                         value: 'pending',
                         child: Text('Pending'),
                       ),
                       DropdownMenuItem(
-                        value: 'completed',
-                        child: Text('Completed'),
+                        value: 'waiting',
+                        child: Text('Waiting'),
                       ),
                       DropdownMenuItem(
-                        value: 'cancelled',
-                        child: Text('Cancelled'),
+                        value: 'editing',
+                        child: Text('Editing'),
                       ),
+                      DropdownMenuItem(
+                        value: 'post_processing',
+                        child: Text('Post Processing'),
+                      ),
+                      DropdownMenuItem(
+                        value: 'complete',
+                        child: Text('Complete'),
+                      ),
+                      DropdownMenuItem(value: 'cancel', child: Text('Cancel')),
+                      DropdownMenuItem(value: 'finish', child: Text('Finish')),
                     ],
                     onChanged: (value) {
                       setState(() {
@@ -743,7 +843,15 @@ class _TransactionPageState extends State<TransactionPage> {
                                     ),
                                   ),
                                 ),
-
+                                DataColumn(
+                                  label: Text(
+                                    'Status Kerja',
+                                    style: TextStyle(
+                                      color: Color(0xffC69749),
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
                                 DataColumn(
                                   label: Text(
                                     'URL Photos',
@@ -823,6 +931,7 @@ class _TransactionPageState extends State<TransactionPage> {
                                             ),
                                           ),
                                         ),
+
                                         // DataCell(
                                         //   Container(
                                         //     padding: const EdgeInsets.symmetric(
@@ -854,7 +963,6 @@ class _TransactionPageState extends State<TransactionPage> {
                                         //     ),
                                         //   ),
                                         // ),
-
                                         DataCell(
                                           Text(
                                             formatCurrency(
@@ -938,7 +1046,17 @@ class _TransactionPageState extends State<TransactionPage> {
                                             ),
                                           ),
                                         ),
-
+                                        DataCell(
+                                          Text(
+                                            formatDate(
+                                              transaction['status_work'],
+                                            ),
+                                            style: TextStyle(
+                                              color: Colors.white,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ),
                                         DataCell(
                                           SelectableText(
                                             transaction['url_photos']
