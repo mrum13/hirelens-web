@@ -173,6 +173,8 @@ class _TransactionPageState extends State<TransactionPage> {
       _updateStatusUrlPhotos(transactionId: transaction['id'], status: false);
     } else if (selectedValue == "option4") {
       _updateStatusPayout(transactionId: transaction['id']);
+    } else if (selectedValue == "option5") {
+      _deleteTransaction(transaction);
     }
   }
 
@@ -366,9 +368,41 @@ class _TransactionPageState extends State<TransactionPage> {
     );
   }
 
-  void _deleteTransaction(Map<String, dynamic> transaction) {
-    final customer = transaction['customer'] as Map<String, dynamic>?;
-    final vendor = transaction['vendors'] as Map<String, dynamic>?;
+  void _deleteTransaction(Map<String, dynamic> transaction) async {
+    try {
+        setState(() {
+          isLoading = true;
+        });
+
+        final supabase = Supabase.instance.client;
+        await supabase.from('transactions').delete().eq('id', transaction['id']);
+
+        setState(() {
+          isLoading = false;
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              "Transaksi berhasil dihapus",
+              style: TextStyle(color: Colors.white),
+            ),
+            backgroundColor: Colors.green,
+          ),
+        );
+
+        fetchTransactions();
+      } catch (e) {
+        setState(() {
+          isLoading = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(e.toString(), style: TextStyle(color: Colors.white)),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
   }
 
   void _updateStatusUrlPhotos({

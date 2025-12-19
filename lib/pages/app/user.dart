@@ -76,7 +76,6 @@ class _UserPageState extends State<UserPage> {
           isLoading = false;
           datas = tmp;
         });
-
       } else {
         throw Exception('Invalid response: response is null');
       }
@@ -97,9 +96,21 @@ class _UserPageState extends State<UserPage> {
     }
   }
 
-  void banUser(String dataId) async {
-    // TODO: Implement ban user functionality
-    print('Ban user: $dataId');
+  Future<void> deleteUser(String userId) async {
+    final client = Supabase.instance.client;
+
+    try {
+      await client.rpc('delete_user_by_id', params: {'user_id': userId});
+
+      // 🔄 Update UI (hapus dari list)
+      setState(() {
+        datas.removeWhere((u) => u.id == userId);
+      });
+
+      print('User deleted: $userId');
+    } catch (e) {
+      print('Delete failed: $e');
+    }
   }
 
   void sendResetCode(String email) async {
@@ -319,13 +330,16 @@ class _UserPageState extends State<UserPage> {
                                     ),
                                     Padding(
                                       padding: EdgeInsets.all(12.0),
-                                      child: Text(data.userMetadata?['bankName'] ??
-                                            "-"),
+                                      child: Text(
+                                        data.userMetadata?['bankName'] ?? "-",
+                                      ),
                                     ),
                                     Padding(
                                       padding: EdgeInsets.all(12.0),
-                                      child: Text(data.userMetadata?['bankAccount'] ??
-                                            "-"),
+                                      child: Text(
+                                        data.userMetadata?['bankAccount'] ??
+                                            "-",
+                                      ),
                                     ),
                                     Padding(
                                       padding: EdgeInsets.all(12.0),
@@ -347,11 +361,11 @@ class _UserPageState extends State<UserPage> {
                                         children: [
                                           IconButton(
                                             icon: Icon(
-                                              Icons.do_not_disturb_alt_outlined,
+                                              Icons.delete_outline_rounded,
                                               size: 20,
                                             ),
-                                            onPressed: () => banUser(data.id),
-                                            tooltip: "Ban User",
+                                            onPressed: () => deleteUser(data.id),
+                                            tooltip: "Delete User",
                                           ),
                                           SizedBox(width: 4),
                                           IconButton(
