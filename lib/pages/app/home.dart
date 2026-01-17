@@ -39,11 +39,7 @@ class _HomePageState extends State<HomePage> {
 
     try {
       final client = Supabase.instance.client;
-
-      // Fetch all users using RPC function
-      print('Fetching users...');
       final usersResponse = await client.rpc('get_all_users');
-      print('Users response received');
 
       if (usersResponse != null) {
         final List<dynamic> usersList =
@@ -51,10 +47,14 @@ class _HomePageState extends State<HomePage> {
                 ? []
                 : (usersResponse is List ? usersResponse : []);
 
-        print('Total users: ${usersList.length}');
-
         // Count total users
-        totalUsers = usersList.length;
+        totalUsers =
+            usersList.where((user) {
+              final role =
+                  (user['user_metadata']?['role'] as String?)?.toLowerCase();
+
+              return role == 'vendor' || role == 'customer';
+            }).length;
 
         // Count users by role
         totalVendors =
@@ -129,7 +129,7 @@ class _HomePageState extends State<HomePage> {
       // Fetch transactions tanpa join (simple query)
       final response = await client
           .from('transactions')
-          .select('*, vendors!inner(id,name)')
+          .select('*, vendors!inner(id,name,bank_name,bank_account)')
           .order('created_at', ascending: true)
           .limit(4);
 
@@ -300,10 +300,10 @@ class _HomePageState extends State<HomePage> {
                       'Status URL Photos',
                       transaction['status_url_photos'] ?? '-',
                     ),
-                    _buildDetailRow(
-                      'Status Payout',
-                      transaction['status_payout'] ?? '-',
-                    ),
+                    // _buildDetailRow(
+                    //   'Status Payout',
+                    //   transaction['status_payout'] ?? '-',
+                    // ),
                   ],
                 ),
               ),
@@ -754,195 +754,235 @@ class _HomePageState extends State<HomePage> {
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(color: const Color(0xFF3A3F34)),
                 ),
-                child: SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: SingleChildScrollView(
-                    child: DataTable(
-                      headingRowColor: WidgetStateProperty.all(
-                        const Color(0xFF3A3F34),
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    return SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: ConstrainedBox(
+                        constraints: BoxConstraints(
+                          minWidth: constraints.maxWidth,
+                        ),
+                        child: SingleChildScrollView(
+                          child: DataTable(
+                            headingRowColor: WidgetStateProperty.all(
+                              const Color(0xFF3A3F34),
+                            ),
+                            dataRowColor: WidgetStateProperty.all(
+                              const Color(0xFF2A2F24),
+                            ),
+                            columns: const [
+                              DataColumn(
+                                label: Text(
+                                  'ID',
+                                  style: TextStyle(
+                                    color: Color(0xffC69749),
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                              DataColumn(
+                                label: Text(
+                                  'Customer',
+                                  style: TextStyle(
+                                    color: Color(0xffC69749),
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                              DataColumn(
+                                label: Text(
+                                  'Vendor',
+                                  style: TextStyle(
+                                    color: Color(0xffC69749),
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                              DataColumn(
+                                label: Text(
+                                  'Durasi',
+                                  style: TextStyle(
+                                    color: Color(0xffC69749),
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                              DataColumn(
+                                label: Text(
+                                  'Amount',
+                                  style: TextStyle(
+                                    color: Color(0xffC69749),
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                              DataColumn(
+                                label: Text(
+                                  'Date',
+                                  style: TextStyle(
+                                    color: Color(0xffC69749),
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                              DataColumn(
+                                label: Text(
+                                  'Status Kerja',
+                                  style: TextStyle(
+                                    color: Color(0xffC69749),
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                              DataColumn(
+                                label: Text(
+                                  'URL Photos',
+                                  style: TextStyle(
+                                    color: Color(0xffC69749),
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                              DataColumn(
+                                label: Text(
+                                  'Rekening Vendor',
+                                  style: TextStyle(
+                                    color: Color(0xffC69749),
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                              DataColumn(
+                                label: Text(
+                                  'Actions',
+                                  style: TextStyle(
+                                    color: Color(0xffC69749),
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ],
+                            rows:
+                                filteredTransactions.reversed.map((
+                                  transaction,
+                                ) {
+                                  final customer =
+                                      transaction as Map<String, dynamic>?;
+
+                                  final vendor =
+                                      transaction['vendors']
+                                          as Map<String, dynamic>?;
+                                  final customerName =
+                                      customer?['user_displayname'] ??
+                                      'Unknown Cus';
+                                  final vendorName =
+                                      vendor?['name'] ?? 'Unknown';
+                                  final bankAccount =
+                                      "${vendor!['bank_name']} | ${vendor['bank_account']}" ??
+                                      'Unknown';
+
+                                  return DataRow(
+                                    cells: [
+                                      DataCell(
+                                        Text(
+                                          transaction['id']
+                                              .toString()
+                                              .substring(0, 8),
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontFamily: 'monospace',
+                                          ),
+                                        ),
+                                      ),
+                                      DataCell(
+                                        Text(
+                                          customerName,
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                      ),
+                                      DataCell(
+                                        Text(
+                                          vendorName,
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                      ),
+                                      DataCell(
+                                        Text(
+                                          transaction['durasi'].toString(),
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                      ),
+
+                                      DataCell(
+                                        Text(
+                                          formatCurrency(transaction['amount']),
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                      DataCell(
+                                        Text(
+                                          formatDate(transaction['created_at']),
+                                          style: const TextStyle(
+                                            color: Color(0xFF9E9E9E),
+                                          ),
+                                        ),
+                                      ),
+                                      DataCell(
+                                        SelectableText(
+                                          transaction['status_work'].toString(),
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                      DataCell(
+                                        SelectableText(
+                                          transaction['url_photos'].toString(),
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                      DataCell(
+                                        SelectableText(
+                                          bankAccount,
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                      DataCell(
+                                        GestureDetector(
+                                          onTapDown: (details) {
+                                            _showCustomMenu(
+                                              context,
+                                              details.globalPosition,
+                                              transaction,
+                                            );
+                                          },
+                                          child: Icon(Icons.more_vert),
+                                        ),
+                                      ),
+                                    ],
+                                  );
+                                }).toList(),
+                          ),
+                        ),
                       ),
-                      dataRowColor: WidgetStateProperty.all(
-                        const Color(0xFF2A2F24),
-                      ),
-                      columns: const [
-                        DataColumn(
-                          label: Text(
-                            'ID',
-                            style: TextStyle(
-                              color: Color(0xffC69749),
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                        DataColumn(
-                          label: Text(
-                            'Customer',
-                            style: TextStyle(
-                              color: Color(0xffC69749),
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                        DataColumn(
-                          label: Text(
-                            'Vendor',
-                            style: TextStyle(
-                              color: Color(0xffC69749),
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                        DataColumn(
-                          label: Text(
-                            'Durasi',
-                            style: TextStyle(
-                              color: Color(0xffC69749),
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                        DataColumn(
-                          label: Text(
-                            'Amount',
-                            style: TextStyle(
-                              color: Color(0xffC69749),
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                        DataColumn(
-                          label: Text(
-                            'Date',
-                            style: TextStyle(
-                              color: Color(0xffC69749),
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                        DataColumn(
-                          label: Text(
-                            'Status Kerja',
-                            style: TextStyle(
-                              color: Color(0xffC69749),
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                        DataColumn(
-                          label: Text(
-                            'URL Photos',
-                            style: TextStyle(
-                              color: Color(0xffC69749),
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                        DataColumn(
-                          label: Text(
-                            'Actions',
-                            style: TextStyle(
-                              color: Color(0xffC69749),
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      ],
-                      rows:
-                          filteredTransactions.map((transaction) {
-                            final customer =
-                                transaction as Map<String, dynamic>?;
-
-                            final vendor =
-                                transaction['vendors'] as Map<String, dynamic>?;
-                            final customerName =
-                                customer?['user_displayname'] ?? 'Unknown Cus';
-                            final vendorName = vendor?['name'] ?? 'Unknown';
-
-                            return DataRow(
-                              cells: [
-                                DataCell(
-                                  Text(
-                                    transaction['id'].toString().substring(
-                                      0,
-                                      8,
-                                    ),
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontFamily: 'monospace',
-                                    ),
-                                  ),
-                                ),
-                                DataCell(
-                                  Text(
-                                    customerName,
-                                    style: const TextStyle(color: Colors.white),
-                                  ),
-                                ),
-                                DataCell(
-                                  Text(
-                                    vendorName,
-                                    style: const TextStyle(color: Colors.white),
-                                  ),
-                                ),
-                                DataCell(
-                                  Text(
-                                    transaction['durasi'].toString(),
-                                    style: const TextStyle(color: Colors.white),
-                                  ),
-                                ),
-
-                                DataCell(
-                                  Text(
-                                    formatCurrency(transaction['amount']),
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                                DataCell(
-                                  Text(
-                                    formatDate(transaction['created_at']),
-                                    style: const TextStyle(
-                                      color: Color(0xFF9E9E9E),
-                                    ),
-                                  ),
-                                ),
-                                DataCell(
-                                  SelectableText(
-                                    transaction['status_work'].toString(),
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                                DataCell(
-                                  SelectableText(
-                                    transaction['url_photos'].toString(),
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                                DataCell(
-                                  GestureDetector(
-                                    onTapDown: (details) {
-                                      _showCustomMenu(
-                                        context,
-                                        details.globalPosition,
-                                        transaction,
-                                      );
-                                    },
-                                    child: Icon(Icons.more_vert),
-                                  ),
-                                ),
-                              ],
-                            );
-                          }).toList(),
-                    ),
-                  ),
+                    );
+                  },
                 ),
               ),
     );

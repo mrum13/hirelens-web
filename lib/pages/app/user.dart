@@ -133,7 +133,7 @@ class _UserPageState extends State<UserPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              "User Page",
+              "Users",
               style: themeFromContext(context).textTheme.displayLarge,
             ),
             SizedBox(height: 16),
@@ -186,207 +186,226 @@ class _UserPageState extends State<UserPage> {
                           ],
                         ),
                       )
-                      : SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        child: SingleChildScrollView(
-                          child: Table(
-                            border: TableBorder(
-                              bottom: BorderSide(
-                                color:
-                                    themeFromContext(
-                                      context,
-                                    ).colorScheme.outline,
-                                width: 1,
+                      : LayoutBuilder(
+                        builder: (context, constraints) {
+                          return SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            child: ConstrainedBox(
+                              constraints: BoxConstraints(
+                                minWidth: constraints.maxWidth,
                               ),
-                            ),
-                            defaultColumnWidth: IntrinsicColumnWidth(),
-                            children: [
-                              TableRow(
-                                decoration: BoxDecoration(
-                                  color: themeFromContext(
-                                    context,
-                                  ).colorScheme.surfaceVariant.withOpacity(0.3),
-                                ),
-                                children: [
-                                  Padding(
-                                    padding: EdgeInsets.all(12.0),
-                                    child: Text(
-                                      "Name",
-                                      textAlign: TextAlign.center,
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                      ),
+                              child: SingleChildScrollView(
+                                child: Table(
+                                  border: TableBorder(
+                                    bottom: BorderSide(
+                                      color:
+                                          themeFromContext(
+                                            context,
+                                          ).colorScheme.outline,
+                                      width: 1,
                                     ),
                                   ),
-                                  Padding(
-                                    padding: EdgeInsets.all(12.0),
-                                    child: Text(
-                                      "Email",
-                                      textAlign: TextAlign.center,
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ),
-                                  Padding(
-                                    padding: EdgeInsets.all(12.0),
-                                    child: Text(
-                                      "Role",
-                                      textAlign: TextAlign.center,
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ),
-                                  Padding(
-                                    padding: EdgeInsets.all(12.0),
-                                    child: Text(
-                                      "Rekening",
-                                      textAlign: TextAlign.center,
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ),
-                                  Padding(
-                                    padding: EdgeInsets.all(12.0),
-                                    child: Text(
-                                      "No. Rekening",
-                                      textAlign: TextAlign.center,
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ),
-                                  Padding(
-                                    padding: EdgeInsets.all(12.0),
-                                    child: Text(
-                                      "Date Created",
-                                      textAlign: TextAlign.center,
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ),
-                                  Padding(
-                                    padding: EdgeInsets.all(12.0),
-                                    child: Text(
-                                      "Last Login",
-                                      textAlign: TextAlign.center,
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ),
-                                  Padding(
-                                    padding: EdgeInsets.all(12.0),
-                                    child: Text(
-                                      "Actions",
-                                      textAlign: TextAlign.center,
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              ...datas.map((data) {
-                                return TableRow(
+                                  defaultColumnWidth: IntrinsicColumnWidth(),
                                   children: [
-                                    Padding(
-                                      padding: EdgeInsets.all(12.0),
-                                      child: Text(
-                                        data.userMetadata?['displayName'] ??
-                                            "-",
+                                    TableRow(
+                                      decoration: BoxDecoration(
+                                        color: themeFromContext(context)
+                                            .colorScheme
+                                            .surfaceVariant
+                                            .withOpacity(0.3),
                                       ),
-                                    ),
-                                    Padding(
-                                      padding: EdgeInsets.all(12.0),
-                                      child: Text(data.email ?? "-"),
-                                    ),
-                                    Padding(
-                                      padding: EdgeInsets.all(12.0),
-                                      child: Container(
-                                        padding: EdgeInsets.symmetric(
-                                          horizontal: 8,
-                                          vertical: 4,
-                                        ),
-                                        decoration: BoxDecoration(
-                                          color: _getRoleColor(
-                                            data.userMetadata?['role'],
-                                          ),
-                                          borderRadius: BorderRadius.circular(
-                                            4,
+                                      children: [
+                                        Padding(
+                                          padding: EdgeInsets.all(12.0),
+                                          child: Text(
+                                            "Name",
+                                            textAlign: TextAlign.center,
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                            ),
                                           ),
                                         ),
-                                        child: Text(
-                                          data.userMetadata?['role'] ?? "-",
-                                          style: TextStyle(
-                                            color: Colors.white,
-                                            fontWeight: FontWeight.bold,
+                                        Padding(
+                                          padding: EdgeInsets.all(12.0),
+                                          child: Text(
+                                            "Email",
+                                            textAlign: TextAlign.center,
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                            ),
                                           ),
                                         ),
-                                      ),
+                                        Padding(
+                                          padding: EdgeInsets.all(12.0),
+                                          child: Text(
+                                            "Role",
+                                            textAlign: TextAlign.center,
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ),
+                                        Padding(
+                                          padding: EdgeInsets.all(12.0),
+                                          child: Text(
+                                            "Rekening",
+                                            textAlign: TextAlign.center,
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ),
+                                        Padding(
+                                          padding: EdgeInsets.all(12.0),
+                                          child: Text(
+                                            "No. Rekening",
+                                            textAlign: TextAlign.center,
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ),
+                                        Padding(
+                                          padding: EdgeInsets.all(12.0),
+                                          child: Text(
+                                            "Date Created",
+                                            textAlign: TextAlign.center,
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ),
+                                        Padding(
+                                          padding: EdgeInsets.all(12.0),
+                                          child: Text(
+                                            "Last Login",
+                                            textAlign: TextAlign.center,
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ),
+                                        Padding(
+                                          padding: EdgeInsets.all(12.0),
+                                          child: Text(
+                                            "Actions",
+                                            textAlign: TextAlign.center,
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
                                     ),
-                                    Padding(
-                                      padding: EdgeInsets.all(12.0),
-                                      child: Text(
-                                        data.userMetadata?['bankName'] ?? "-",
-                                      ),
-                                    ),
-                                    Padding(
-                                      padding: EdgeInsets.all(12.0),
-                                      child: Text(
-                                        data.userMetadata?['bankAccount'] ??
-                                            "-",
-                                      ),
-                                    ),
-                                    Padding(
-                                      padding: EdgeInsets.all(12.0),
-                                      child: Text(_formatDate(data.createdAt)),
-                                    ),
-                                    Padding(
-                                      padding: EdgeInsets.all(12.0),
-                                      child: Text(
-                                        data.lastSignInAt != null
-                                            ? _formatDate(data.lastSignInAt!)
-                                            : "-",
-                                      ),
-                                    ),
-                                    Padding(
-                                      padding: EdgeInsets.all(12.0),
-                                      child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
+                                    ...datas.map((data) {
+                                      return TableRow(
                                         children: [
-                                          IconButton(
-                                            icon: Icon(
-                                              Icons.delete_outline_rounded,
-                                              size: 20,
+                                          Padding(
+                                            padding: EdgeInsets.all(12.0),
+                                            child: Text(
+                                              data.userMetadata?['displayName'] ??
+                                                  "-",
                                             ),
-                                            onPressed: () => deleteUser(data.id),
-                                            tooltip: "Delete User",
                                           ),
-                                          SizedBox(width: 4),
-                                          IconButton(
-                                            icon: Icon(
-                                              Icons.mail_outline,
-                                              size: 20,
+                                          Padding(
+                                            padding: EdgeInsets.all(12.0),
+                                            child: Text(data.email ?? "-"),
+                                          ),
+                                          Padding(
+                                            padding: EdgeInsets.all(12.0),
+                                            child: Container(
+                                              padding: EdgeInsets.symmetric(
+                                                horizontal: 8,
+                                                vertical: 4,
+                                              ),
+                                              decoration: BoxDecoration(
+                                                color: _getRoleColor(
+                                                  data.userMetadata?['role'],
+                                                ),
+                                                borderRadius:
+                                                    BorderRadius.circular(4),
+                                              ),
+                                              child: Text(
+                                                data.userMetadata?['role'] ??
+                                                    "-",
+                                                style: TextStyle(
+                                                  color: Colors.white,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
                                             ),
-                                            onPressed:
-                                                () =>
-                                                    sendResetCode(data.email!),
-                                            tooltip: "Send Reset Password Code",
+                                          ),
+                                          Padding(
+                                            padding: EdgeInsets.all(12.0),
+                                            child: Text(
+                                              data.userMetadata?['bankName'] ??
+                                                  "-",
+                                            ),
+                                          ),
+                                          Padding(
+                                            padding: EdgeInsets.all(12.0),
+                                            child: Text(
+                                              data.userMetadata?['bankAccount'] ??
+                                                  "-",
+                                            ),
+                                          ),
+                                          Padding(
+                                            padding: EdgeInsets.all(12.0),
+                                            child: Text(
+                                              _formatDate(data.createdAt),
+                                            ),
+                                          ),
+                                          Padding(
+                                            padding: EdgeInsets.all(12.0),
+                                            child: Text(
+                                              data.lastSignInAt != null
+                                                  ? _formatDate(
+                                                    data.lastSignInAt!,
+                                                  )
+                                                  : "-",
+                                            ),
+                                          ),
+                                          Padding(
+                                            padding: EdgeInsets.all(12.0),
+                                            child: Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
+                                              children: [
+                                                IconButton(
+                                                  icon: Icon(
+                                                    Icons
+                                                        .delete_outline_rounded,
+                                                    size: 20,
+                                                  ),
+                                                  onPressed:
+                                                      () => deleteUser(data.id),
+                                                  tooltip: "Delete User",
+                                                ),
+                                                SizedBox(width: 4),
+                                                IconButton(
+                                                  icon: Icon(
+                                                    Icons.mail_outline,
+                                                    size: 20,
+                                                  ),
+                                                  onPressed:
+                                                      () => sendResetCode(
+                                                        data.email!,
+                                                      ),
+                                                  tooltip:
+                                                      "Send Reset Password Code",
+                                                ),
+                                              ],
+                                            ),
                                           ),
                                         ],
-                                      ),
-                                    ),
+                                      );
+                                    }),
                                   ],
-                                );
-                              }),
-                            ],
-                          ),
-                        ),
+                                ),
+                              ),
+                            ),
+                          );
+                        },
                       ),
             ),
           ],

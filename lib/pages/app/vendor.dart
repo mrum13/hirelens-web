@@ -291,10 +291,10 @@ class _VendorPageState extends State<VendorPage> {
                                         value: 'edit',
                                         child: Text('Edit Vendor'),
                                       ),
-                                      const PopupMenuItem(
-                                        value: 'ban',
-                                        child: Text('Ban Vendor'),
-                                      ),
+                                      // const PopupMenuItem(
+                                      //   value: 'ban',
+                                      //   child: Text('Ban Vendor'),
+                                      // ),
                                     ],
                                 onSelected: (value) {
                                   if (value == 'edit') {

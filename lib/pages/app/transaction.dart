@@ -37,7 +37,7 @@ class _TransactionPageState extends State<TransactionPage> {
       // Fetch transactions tanpa join (simple query)
       final response = await client
           .from('transactions')
-          .select('*, vendors!inner(id,name)')
+          .select('*, vendors!inner(id,name,bank_account,bank_name)')
           .order('created_at', ascending: false);
 
       if (mounted) {
@@ -74,19 +74,19 @@ class _TransactionPageState extends State<TransactionPage> {
     try {
       final client = Supabase.instance.client;
 
-      late PostgrestTransformBuilder<List<Map<String,dynamic>>> query; 
+      late PostgrestTransformBuilder<List<Map<String, dynamic>>> query;
 
       if (keyword.isNotEmpty) {
         query = client
-          .from('transactions')
-          .select('*, vendors!inner(id,name)')
-          .or('user_displayname.ilike.%$keyword%')
-          .order('created_at', ascending: false);
+            .from('transactions')
+            .select('*, vendors!inner(id,name,bank_account,bank_name)')
+            .or('user_displayname.ilike.%$keyword%')
+            .order('created_at', ascending: false);
       } else {
         query = client
-          .from('transactions')
-          .select('*, vendors!inner(id,name)')
-          .order('created_at', ascending: false);
+            .from('transactions')
+            .select('*, vendors!inner(id,name,bank_account,bank_name)')
+            .order('created_at', ascending: false);
       }
 
       final response = await query;
@@ -130,14 +130,14 @@ class _TransactionPageState extends State<TransactionPage> {
         // Fetch transactions tanpa join (simple query)
         response = await client
             .from('transactions')
-            .select('*, vendors!inner(id,name)')
+            .select('*, vendors!inner(id,name,bank_account,bank_name)')
             .eq('status_work', selectedStatus)
             .order('created_at', ascending: false);
       } else {
         // Fetch transactions tanpa join (simple query)
         response = await client
             .from('transactions')
-            .select('*, vendors!inner(id,name)')
+            .select('*, vendors!inner(id,name,bank_account,bank_name)')
             .order('created_at', ascending: false);
       }
 
@@ -436,10 +436,10 @@ class _TransactionPageState extends State<TransactionPage> {
                       'Status URL Photos',
                       transaction['status_url_photos'] ?? '-',
                     ),
-                    _buildDetailRow(
-                      'Status Payout',
-                      transaction['status_payout'] ?? '-',
-                    ),
+                    // _buildDetailRow(
+                    //   'Status Payout',
+                    //   transaction['status_payout'] ?? '-',
+                    // ),
                   ],
                 ),
               ),
@@ -751,353 +751,376 @@ class _TransactionPageState extends State<TransactionPage> {
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(color: const Color(0xFF3A3F34)),
                         ),
-                        child: SingleChildScrollView(
-                          scrollDirection: Axis.horizontal,
-                          child: SingleChildScrollView(
-                            child: DataTable(
-                              headingRowColor: WidgetStateProperty.all(
-                                const Color(0xFF3A3F34),
+                        child: LayoutBuilder(
+                          builder: (context, constraints) {
+                            return SingleChildScrollView(
+                              scrollDirection: Axis.horizontal,
+                              child: ConstrainedBox(
+                                constraints: BoxConstraints(
+                                  minWidth: constraints.maxWidth,
+                                ),
+                                child: SingleChildScrollView(
+                                  child: DataTable(
+                                    headingRowColor: WidgetStateProperty.all(
+                                      const Color(0xFF3A3F34),
+                                    ),
+                                    dataRowColor: WidgetStateProperty.all(
+                                      const Color(0xFF2A2F24),
+                                    ),
+                                    columns: const [
+                                      DataColumn(
+                                        label: Text(
+                                          'ID',
+                                          style: TextStyle(
+                                            color: Color(0xffC69749),
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                      DataColumn(
+                                        label: Text(
+                                          'Customer',
+                                          style: TextStyle(
+                                            color: Color(0xffC69749),
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                      DataColumn(
+                                        label: Text(
+                                          'Vendor',
+                                          style: TextStyle(
+                                            color: Color(0xffC69749),
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                      DataColumn(
+                                        label: Text(
+                                          'Durasi',
+                                          style: TextStyle(
+                                            color: Color(0xffC69749),
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                      // DataColumn(
+                                      //   label: Text(
+                                      //     'Payment Type',
+                                      //     style: TextStyle(
+                                      //       color: Color(0xffC69749),
+                                      //       fontWeight: FontWeight.bold,
+                                      //     ),
+                                      //   ),
+                                      // ),
+                                      DataColumn(
+                                        label: Text(
+                                          'Amount',
+                                          style: TextStyle(
+                                            color: Color(0xffC69749),
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                      // DataColumn(
+                                      //   label: Text(
+                                      //     'Status Payment',
+                                      //     style: TextStyle(
+                                      //       color: Color(0xffC69749),
+                                      //       fontWeight: FontWeight.bold,
+                                      //     ),
+                                      //   ),
+                                      // ),
+                                      // DataColumn(
+                                      //   label: Text(
+                                      //     'Status Work',
+                                      //     style: TextStyle(
+                                      //       color: Color(0xffC69749),
+                                      //       fontWeight: FontWeight.bold,
+                                      //     ),
+                                      //   ),
+                                      // ),
+                                      DataColumn(
+                                        label: Text(
+                                          'Date',
+                                          style: TextStyle(
+                                            color: Color(0xffC69749),
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                      DataColumn(
+                                        label: Text(
+                                          'Status Kerja',
+                                          style: TextStyle(
+                                            color: Color(0xffC69749),
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                      DataColumn(
+                                        label: Text(
+                                          'URL Photos',
+                                          style: TextStyle(
+                                            color: Color(0xffC69749),
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                      DataColumn(
+                                        label: Text(
+                                          'Rekening Vendor',
+                                          style: TextStyle(
+                                            color: Color(0xffC69749),
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                      DataColumn(
+                                        label: Text(
+                                          'Actions',
+                                          style: TextStyle(
+                                            color: Color(0xffC69749),
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                    rows:
+                                        filteredTransactions.map((transaction) {
+                                          final customer =
+                                              transaction
+                                                  as Map<String, dynamic>?;
+
+                                          final vendor =
+                                              transaction['vendors']
+                                                  as Map<String, dynamic>?;
+                                          final customerName =
+                                              customer?['user_displayname'] ??
+                                              'Unknown Cus';
+                                          final vendorName =
+                                              vendor?['name'] ?? 'Unknown';
+                                          final bankAccount =
+                                              "${vendor!['bank_name']} | ${vendor['bank_account']}" ??
+                                              'Unknown';
+
+                                          return DataRow(
+                                            cells: [
+                                              DataCell(
+                                                Text(
+                                                  transaction['id']
+                                                      .toString()
+                                                      .substring(0, 8),
+                                                  style: const TextStyle(
+                                                    color: Colors.white,
+                                                    fontFamily: 'monospace',
+                                                  ),
+                                                ),
+                                              ),
+                                              DataCell(
+                                                Text(
+                                                  customerName,
+                                                  style: const TextStyle(
+                                                    color: Colors.white,
+                                                  ),
+                                                ),
+                                              ),
+                                              DataCell(
+                                                Text(
+                                                  vendorName,
+                                                  style: const TextStyle(
+                                                    color: Colors.white,
+                                                  ),
+                                                ),
+                                              ),
+                                              DataCell(
+                                                Text(
+                                                  transaction['durasi']
+                                                      .toString(),
+                                                  style: const TextStyle(
+                                                    color: Colors.white,
+                                                  ),
+                                                ),
+                                              ),
+
+                                              // DataCell(
+                                              //   Container(
+                                              //     padding: const EdgeInsets.symmetric(
+                                              //       horizontal: 12,
+                                              //       vertical: 6,
+                                              //     ),
+                                              //     decoration: BoxDecoration(
+                                              //       color: getStatusColor(
+                                              //         transaction['payment_type'],
+                                              //       ).withOpacity(0.2),
+                                              //       borderRadius:
+                                              //           BorderRadius.circular(12),
+                                              //       border: Border.all(
+                                              //         color: getStatusColor(
+                                              //           transaction['payment_type'],
+                                              //         ),
+                                              //       ),
+                                              //     ),
+                                              //     child: Text(
+                                              //       transaction['payment_type'] ??
+                                              //           'Unknown',
+                                              //       style: TextStyle(
+                                              //         color: getStatusColor(
+                                              //           transaction['payment_type'],
+                                              //         ),
+                                              //         fontSize: 12,
+                                              //         fontWeight: FontWeight.bold,
+                                              //       ),
+                                              //     ),
+                                              //   ),
+                                              // ),
+                                              DataCell(
+                                                Text(
+                                                  formatCurrency(
+                                                    transaction['amount'],
+                                                  ),
+                                                  style: const TextStyle(
+                                                    color: Colors.white,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                              ),
+                                              // DataCell(
+                                              //   Container(
+                                              //     padding: const EdgeInsets.symmetric(
+                                              //       horizontal: 12,
+                                              //       vertical: 6,
+                                              //     ),
+                                              //     decoration: BoxDecoration(
+                                              //       color: getStatusColor(
+                                              //         transaction['status_payment'],
+                                              //       ).withOpacity(0.2),
+                                              //       borderRadius:
+                                              //           BorderRadius.circular(12),
+                                              //       border: Border.all(
+                                              //         color: getStatusColor(
+                                              //           transaction['status_payment'],
+                                              //         ),
+                                              //       ),
+                                              //     ),
+                                              //     child: Text(
+                                              //       transaction['status_payment'] ??
+                                              //           'Unknown',
+                                              //       style: TextStyle(
+                                              //         color: getStatusColor(
+                                              //           transaction['status_payment'],
+                                              //         ),
+                                              //         fontSize: 12,
+                                              //         fontWeight: FontWeight.bold,
+                                              //       ),
+                                              //     ),
+                                              //   ),
+                                              // ),
+                                              // DataCell(
+                                              //   Container(
+                                              //     padding: const EdgeInsets.symmetric(
+                                              //       horizontal: 12,
+                                              //       vertical: 6,
+                                              //     ),
+                                              //     decoration: BoxDecoration(
+                                              //       color: getStatusColor(
+                                              //         transaction['status_work'],
+                                              //       ).withOpacity(0.2),
+                                              //       borderRadius:
+                                              //           BorderRadius.circular(12),
+                                              //       border: Border.all(
+                                              //         color: getStatusColor(
+                                              //           transaction['status_work'],
+                                              //         ),
+                                              //       ),
+                                              //     ),
+                                              //     child: Text(
+                                              //       transaction['status_work'] ??
+                                              //           'Unknown',
+                                              //       style: TextStyle(
+                                              //         color: getStatusColor(
+                                              //           transaction['status_work'],
+                                              //         ),
+                                              //         fontSize: 12,
+                                              //         fontWeight: FontWeight.bold,
+                                              //       ),
+                                              //     ),
+                                              //   ),
+                                              // ),
+                                              DataCell(
+                                                Text(
+                                                  formatDate(
+                                                    transaction['created_at'],
+                                                  ),
+                                                  style: const TextStyle(
+                                                    color: Color(0xFF9E9E9E),
+                                                  ),
+                                                ),
+                                              ),
+                                              DataCell(
+                                                Text(
+                                                  formatDate(
+                                                    transaction['status_work'],
+                                                  ),
+                                                  style: TextStyle(
+                                                    color: Colors.white,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                              ),
+                                              DataCell(
+                                                SelectableText(
+                                                  transaction['url_photos']
+                                                      .toString(),
+                                                  style: const TextStyle(
+                                                    color: Colors.white,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                                // Icon(
+                                                //   Icons.link,
+                                                //   color: transaction['status_url_photos']==null?Colors.grey:(transaction['status_url_photos']=='approved'?Colors.green:Colors.red),
+                                                //   size: 20,
+                                                // )
+                                              ),
+                                              // DataCell(
+                                              //   Text(
+                                              //     transaction['status_payout'],
+                                              //     style: const TextStyle(
+                                              //       color: Colors.white,
+                                              //       fontWeight: FontWeight.bold,
+                                              //     ),
+                                              //   ),
+                                              // ),
+                                              DataCell(
+                                                Text(
+                                                  bankAccount,
+                                                  style: TextStyle(
+                                                    color: Colors.white,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                              ),
+                                              DataCell(
+                                                GestureDetector(
+                                                  onTapDown: (details) {
+                                                    _showCustomMenu(
+                                                      context,
+                                                      details.globalPosition,
+                                                      transaction,
+                                                    );
+                                                  },
+                                                  child: Icon(Icons.more_vert),
+                                                ),
+                                              ),
+                                            ],
+                                          );
+                                        }).toList(),
+                                  ),
+                                ),
                               ),
-                              dataRowColor: WidgetStateProperty.all(
-                                const Color(0xFF2A2F24),
-                              ),
-                              columns: const [
-                                DataColumn(
-                                  label: Text(
-                                    'ID',
-                                    style: TextStyle(
-                                      color: Color(0xffC69749),
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                                DataColumn(
-                                  label: Text(
-                                    'Customer',
-                                    style: TextStyle(
-                                      color: Color(0xffC69749),
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                                DataColumn(
-                                  label: Text(
-                                    'Vendor',
-                                    style: TextStyle(
-                                      color: Color(0xffC69749),
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                                DataColumn(
-                                  label: Text(
-                                    'Durasi',
-                                    style: TextStyle(
-                                      color: Color(0xffC69749),
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                                // DataColumn(
-                                //   label: Text(
-                                //     'Payment Type',
-                                //     style: TextStyle(
-                                //       color: Color(0xffC69749),
-                                //       fontWeight: FontWeight.bold,
-                                //     ),
-                                //   ),
-                                // ),
-                                DataColumn(
-                                  label: Text(
-                                    'Amount',
-                                    style: TextStyle(
-                                      color: Color(0xffC69749),
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                                // DataColumn(
-                                //   label: Text(
-                                //     'Status Payment',
-                                //     style: TextStyle(
-                                //       color: Color(0xffC69749),
-                                //       fontWeight: FontWeight.bold,
-                                //     ),
-                                //   ),
-                                // ),
-                                // DataColumn(
-                                //   label: Text(
-                                //     'Status Work',
-                                //     style: TextStyle(
-                                //       color: Color(0xffC69749),
-                                //       fontWeight: FontWeight.bold,
-                                //     ),
-                                //   ),
-                                // ),
-                                DataColumn(
-                                  label: Text(
-                                    'Date',
-                                    style: TextStyle(
-                                      color: Color(0xffC69749),
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                                DataColumn(
-                                  label: Text(
-                                    'Status Kerja',
-                                    style: TextStyle(
-                                      color: Color(0xffC69749),
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                                DataColumn(
-                                  label: Text(
-                                    'URL Photos',
-                                    style: TextStyle(
-                                      color: Color(0xffC69749),
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                                // DataColumn(
-                                //   label: Text(
-                                //     'Status Payouts',
-                                //     style: TextStyle(
-                                //       color: Color(0xffC69749),
-                                //       fontWeight: FontWeight.bold,
-                                //     ),
-                                //   ),
-                                // ),
-                                DataColumn(
-                                  label: Text(
-                                    'Actions',
-                                    style: TextStyle(
-                                      color: Color(0xffC69749),
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                              rows:
-                                  filteredTransactions.map((transaction) {
-                                    final customer =
-                                        transaction as Map<String, dynamic>?;
-
-                                    final vendor =
-                                        transaction['vendors']
-                                            as Map<String, dynamic>?;
-                                    final customerName =
-                                        customer?['user_displayname'] ??
-                                        'Unknown Cus';
-                                    final vendorName =
-                                        vendor?['name'] ?? 'Unknown';
-
-                                    return DataRow(
-                                      cells: [
-                                        DataCell(
-                                          Text(
-                                            transaction['id']
-                                                .toString()
-                                                .substring(0, 8),
-                                            style: const TextStyle(
-                                              color: Colors.white,
-                                              fontFamily: 'monospace',
-                                            ),
-                                          ),
-                                        ),
-                                        DataCell(
-                                          Text(
-                                            customerName,
-                                            style: const TextStyle(
-                                              color: Colors.white,
-                                            ),
-                                          ),
-                                        ),
-                                        DataCell(
-                                          Text(
-                                            vendorName,
-                                            style: const TextStyle(
-                                              color: Colors.white,
-                                            ),
-                                          ),
-                                        ),
-                                        DataCell(
-                                          Text(
-                                            transaction['durasi'].toString(),
-                                            style: const TextStyle(
-                                              color: Colors.white,
-                                            ),
-                                          ),
-                                        ),
-
-                                        // DataCell(
-                                        //   Container(
-                                        //     padding: const EdgeInsets.symmetric(
-                                        //       horizontal: 12,
-                                        //       vertical: 6,
-                                        //     ),
-                                        //     decoration: BoxDecoration(
-                                        //       color: getStatusColor(
-                                        //         transaction['payment_type'],
-                                        //       ).withOpacity(0.2),
-                                        //       borderRadius:
-                                        //           BorderRadius.circular(12),
-                                        //       border: Border.all(
-                                        //         color: getStatusColor(
-                                        //           transaction['payment_type'],
-                                        //         ),
-                                        //       ),
-                                        //     ),
-                                        //     child: Text(
-                                        //       transaction['payment_type'] ??
-                                        //           'Unknown',
-                                        //       style: TextStyle(
-                                        //         color: getStatusColor(
-                                        //           transaction['payment_type'],
-                                        //         ),
-                                        //         fontSize: 12,
-                                        //         fontWeight: FontWeight.bold,
-                                        //       ),
-                                        //     ),
-                                        //   ),
-                                        // ),
-                                        DataCell(
-                                          Text(
-                                            formatCurrency(
-                                              transaction['amount'],
-                                            ),
-                                            style: const TextStyle(
-                                              color: Colors.white,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-                                        ),
-                                        // DataCell(
-                                        //   Container(
-                                        //     padding: const EdgeInsets.symmetric(
-                                        //       horizontal: 12,
-                                        //       vertical: 6,
-                                        //     ),
-                                        //     decoration: BoxDecoration(
-                                        //       color: getStatusColor(
-                                        //         transaction['status_payment'],
-                                        //       ).withOpacity(0.2),
-                                        //       borderRadius:
-                                        //           BorderRadius.circular(12),
-                                        //       border: Border.all(
-                                        //         color: getStatusColor(
-                                        //           transaction['status_payment'],
-                                        //         ),
-                                        //       ),
-                                        //     ),
-                                        //     child: Text(
-                                        //       transaction['status_payment'] ??
-                                        //           'Unknown',
-                                        //       style: TextStyle(
-                                        //         color: getStatusColor(
-                                        //           transaction['status_payment'],
-                                        //         ),
-                                        //         fontSize: 12,
-                                        //         fontWeight: FontWeight.bold,
-                                        //       ),
-                                        //     ),
-                                        //   ),
-                                        // ),
-                                        // DataCell(
-                                        //   Container(
-                                        //     padding: const EdgeInsets.symmetric(
-                                        //       horizontal: 12,
-                                        //       vertical: 6,
-                                        //     ),
-                                        //     decoration: BoxDecoration(
-                                        //       color: getStatusColor(
-                                        //         transaction['status_work'],
-                                        //       ).withOpacity(0.2),
-                                        //       borderRadius:
-                                        //           BorderRadius.circular(12),
-                                        //       border: Border.all(
-                                        //         color: getStatusColor(
-                                        //           transaction['status_work'],
-                                        //         ),
-                                        //       ),
-                                        //     ),
-                                        //     child: Text(
-                                        //       transaction['status_work'] ??
-                                        //           'Unknown',
-                                        //       style: TextStyle(
-                                        //         color: getStatusColor(
-                                        //           transaction['status_work'],
-                                        //         ),
-                                        //         fontSize: 12,
-                                        //         fontWeight: FontWeight.bold,
-                                        //       ),
-                                        //     ),
-                                        //   ),
-                                        // ),
-                                        DataCell(
-                                          Text(
-                                            formatDate(
-                                              transaction['created_at'],
-                                            ),
-                                            style: const TextStyle(
-                                              color: Color(0xFF9E9E9E),
-                                            ),
-                                          ),
-                                        ),
-                                        DataCell(
-                                          Text(
-                                            formatDate(
-                                              transaction['status_work'],
-                                            ),
-                                            style: TextStyle(
-                                              color: Colors.white,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-                                        ),
-                                        DataCell(
-                                          SelectableText(
-                                            transaction['url_photos']
-                                                .toString(),
-                                            style: const TextStyle(
-                                              color: Colors.white,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-                                          // Icon(
-                                          //   Icons.link,
-                                          //   color: transaction['status_url_photos']==null?Colors.grey:(transaction['status_url_photos']=='approved'?Colors.green:Colors.red),
-                                          //   size: 20,
-                                          // )
-                                        ),
-                                        // DataCell(
-                                        //   Text(
-                                        //     transaction['status_payout'],
-                                        //     style: const TextStyle(
-                                        //       color: Colors.white,
-                                        //       fontWeight: FontWeight.bold,
-                                        //     ),
-                                        //   ),
-                                        // ),
-                                        DataCell(
-                                          GestureDetector(
-                                            onTapDown: (details) {
-                                              _showCustomMenu(
-                                                context,
-                                                details.globalPosition,
-                                                transaction,
-                                              );
-                                            },
-                                            child: Icon(Icons.more_vert),
-                                          ),
-                                        ),
-                                      ],
-                                    );
-                                  }).toList(),
-                            ),
-                          ),
+                            );
+                          },
                         ),
                       ),
             ),

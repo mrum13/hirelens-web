@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:d_method/d_method.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -121,10 +123,10 @@ class _LoginPageState extends State<LoginPage> {
         throw Exception('Email or Password cannot be empty');
       }
 
-      await Supabase.instance.client.auth.signInWithPassword(
-        email: email,
-        password: password,
-      );
+      var loginResponse = await Supabase.instance.client.auth
+          .signInWithPassword(email: email, password: password);
+
+      DMethod.log("Login Response : $loginResponse");
 
       // CEK ROLE DARI TABEL PROFILES
       final profileResponse =
@@ -134,7 +136,7 @@ class _LoginPageState extends State<LoginPage> {
               .eq('email', email)
               .single();
 
-      DMethod.log(profileResponse.toString());
+      DMethod.log(profileResponse.toString(), prefix: "Profile Response");
 
       // Jika role bukan 'admin', tolak login
       if (profileResponse['role'] != 'admin') {
@@ -148,11 +150,22 @@ class _LoginPageState extends State<LoginPage> {
 
       // Login berhasil, redirect ke home
       GoRouter.of(context).replace('/app/home');
+    } on AuthApiException catch (e) {
+      String message = e.toString();
+      if (e.statusCode=="400") {
+        message = "Username atau password salah";
+      }
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Failed login: $message')));
+
+      setState(() {
+        isLoginLoading = false;
+      });
     } catch (e) {
-      DMethod.log(e.toString());
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed login: ${e.toString()}')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Failed login: ${e.toString()}')));
 
       setState(() {
         isLoginLoading = false;
